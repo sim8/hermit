@@ -36,6 +36,8 @@ async function runTurn(messages: Message[]): Promise<string> {
   }
 }
 
+const logAgentOutput = (text: string) => console.log('\x1b[36m%s\x1b[0m', text);
+
 async function main() {
   const messages: Message[] = [{ role: "system", content: SYSTEM }];
   const argv = process.argv.slice(2).join(" ").trim();
@@ -43,7 +45,7 @@ async function main() {
   // One-shot: `hermit "some prompt"`
   if (argv) {
     messages.push({ role: "user", content: argv });
-    console.log(await runTurn(messages));
+    logAgentOutput(await runTurn(messages));
     return;
   }
 
@@ -62,7 +64,7 @@ async function main() {
     if (line === "exit") break;
     if (line) {
       messages.push({ role: "user", content: line });
-      console.log(await runTurn(messages));
+      logAgentOutput(await runTurn(messages));
     }
     rl.prompt();
   }
