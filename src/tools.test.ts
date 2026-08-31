@@ -51,3 +51,56 @@ test("runTool returns an { error } result instead of throwing", async () => {
   const unknown = await runTool("noSuchTool", {});
   assert.deepEqual(unknown, { error: "unknown tool: noSuchTool" });
 });
+
+test("editFile replaces the first occurrence of oldStr", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "hermit-test-"));
+  const file = path.join(dir, "hello.txt");
+  fs.writeFileSync(file, "one fish\ntwo fish\n");
+
+  try {
+    const result = TOOLS.editFile.run({
+      filename: file,
+      oldStr: "fish",
+      newStr: "bird",
+    });
+    assert.deepEqual(result, { path: file, action: "edited" });
+    assert.equal(fs.readFileSync(file, "utf-8"), "one bird\ntwo fish\n");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("editFile creates the file when oldStr is empty", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "hermit-test-"));
+  const file = path.join(dir, "new.txt");
+
+  try {
+    const result = TOOLS.editFile.run({
+      filename: file,
+      oldStr: "",
+      newStr: "brand new\n",
+    });
+    assert.deepEqual(result, { path: file, action: "created file" });
+    assert.equal(fs.readFileSync(file, "utf-8"), "brand new\n");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("editFile reports when oldStr is not found", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "hermit-test-"));
+  const file = path.join(dir, "hello.txt");
+  fs.writeFileSync(file, "one fish\n");
+
+  try {
+    const result = TOOLS.editFile.run({
+      filename: file,
+      oldStr: "nope",
+      newStr: "bird",
+    });
+    assert.deepEqual(result, { path: file, action: "oldStr not found" });
+    assert.equal(fs.readFileSync(file, "utf-8"), "one fish\n");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
