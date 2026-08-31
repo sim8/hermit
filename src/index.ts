@@ -1,15 +1,12 @@
 #!/usr/bin/env node
 import { createInterface } from "node:readline/promises";
-import { Ollama, type Message, type Tool } from "ollama";
+import { Ollama, type Message } from "ollama";
+import { TOOLS, runTool } from "./tools.js";
 
 const MODEL = "qwen2.5:7b";
 const ollama = new Ollama();
 
 const SYSTEM = "You are a coding agent. Use the provided tools to inspect and edit files before answering.";
-
-// Tool registry: name -> { spec sent to the model, function we run locally }.
-// Empty for now; add read_file, list_files and edit_file here.
-const TOOLS: Record<string, { spec: Tool; run: (args: any) => unknown }> = {};
 
 // Send the conversation to the model, executing any tools it asks for and
 // feeding the results back, until it replies with plain text.
@@ -28,8 +25,7 @@ async function runTurn(messages: Message[]): Promise<string> {
 
     for (const call of res.message.tool_calls) {
       const { name, arguments: args } = call.function;
-      const tool = TOOLS[name];
-      const result = tool ? await tool.run(args) : { error: `unknown tool: ${name}` };
+      const result = await runTool(name, args);
       console.log(`→ ${name}(${JSON.stringify(args)})`);
       messages.push({ role: "tool", content: JSON.stringify(result) });
     }
