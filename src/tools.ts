@@ -29,6 +29,32 @@ export const TOOLS: Record<
       return fs.readFileSync(absPath, "utf-8");
     },
   },
+  listFiles: {
+    spec: {
+      type: "function",
+      function: {
+        name: "List files",
+        description: "List files and dirs in dir at given path",
+        parameters: {
+          type: "object",
+          properties: {
+            dirname: {
+              type: "string",
+              description: "The name of the dir to list files/dirs from",
+            },
+          },
+          required: ["dirname"],
+        },
+      },
+    },
+    run: ({ dirname }: { dirname: string }) => {
+      const dirContents = fs.readdirSync(dirname, { withFileTypes: true });
+      return dirContents.map((item) => ({
+        name: item.name,
+        type: item.isDirectory() ? "dir" : "file",
+      }));
+    },
+  },
 };
 
 // Look up and run a tool by name. Anything that throws — a bad filename, a

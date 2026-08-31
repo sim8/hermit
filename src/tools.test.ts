@@ -18,8 +18,34 @@ test("readFile returns the contents of a file", () => {
   }
 });
 
+test("listFiles returns files and folders in dir", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "hermit-test-"));
+  const file = path.join(dir, "hello.txt");
+  fs.writeFileSync(file, "hello from hermit\n");
+  const folder = path.join(dir, "someFolder");
+  fs.mkdirSync(folder);
+
+  try {
+    const result = TOOLS.listFiles.run({ dirname: dir });
+    assert.deepEqual(result, [
+      {
+        name: "hello.txt",
+        type: "file",
+      },
+      {
+        name: "someFolder",
+        type: "dir",
+      },
+    ]);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("runTool returns an { error } result instead of throwing", async () => {
-  const missing = await runTool("readFile", { filename: "definitely-not-a-real-file.txt" });
+  const missing = await runTool("readFile", {
+    filename: "definitely-not-a-real-file.txt",
+  });
   assert.match((missing as { error: string }).error, /ENOENT/);
 
   const unknown = await runTool("noSuchTool", {});
