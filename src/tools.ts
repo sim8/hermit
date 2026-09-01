@@ -10,7 +10,7 @@ export const TOOLS: Record<
     spec: {
       type: "function",
       function: {
-        name: "Read file",
+        name: "readFile",
         description: "Read a file by a given filename and return its contents",
         parameters: {
           type: "object",
@@ -33,7 +33,7 @@ export const TOOLS: Record<
     spec: {
       type: "function",
       function: {
-        name: "Edit file",
+        name: "editFile",
         description:
           "Replaces first occurrence of oldStr with newStr in file. If oldStr is empty, create/overwrite file with newStr.",
         parameters: {
@@ -86,7 +86,7 @@ export const TOOLS: Record<
     spec: {
       type: "function",
       function: {
-        name: "List files",
+        name: "listFiles",
         description: "List files and dirs in dir at given path",
         parameters: {
           type: "object",
